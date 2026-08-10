@@ -1,0 +1,53 @@
+{
+  "schema_version": "compact-swebench-harborized-v1",
+  "execution": {
+    "commands": [
+      "cmake --build build --target testrunner",
+      "./build/testrunner --gtest_filter=UriSuite.TestDotRoot*:UriSuite.TestAddBase:UriSuite.TestNormalizeSyntax"
+    ],
+    "selected_test_files_to_run": [
+      "test/test.cpp"
+    ],
+    "env": {},
+    "timeout_sec": 1800
+  },
+  "grading": {
+    "fail_to_pass": [
+      "UriSuite.TestDotRootResolveW1",
+      "UriSuite.TestDotRootResolveW2",
+      "UriSuite.TestDotRootResolveW3",
+      "UriSuite.TestDotRootResolveA1",
+      "UriSuite.TestDotRootResolveA2",
+      "UriSuite.TestDotRootResolveA3",
+      "UriSuite.TestDotRootNormalizeW1",
+      "UriSuite.TestDotRootNormalizeW2",
+      "UriSuite.TestDotRootNormalizeW3",
+      "UriSuite.TestDotRootNormalizeA1",
+      "UriSuite.TestDotRootNormalizeA2",
+      "UriSuite.TestDotRootNormalizeA3"
+    ],
+    "pass_to_pass": [
+      "UriSuite.TestDotRootRelativeW",
+      "UriSuite.TestDotRootRelativeA",
+      "UriSuite.TestDotRootSlashSequenceW",
+      "UriSuite.TestDotRootSlashSequenceA",
+      "UriSuite.TestAddBase",
+      "UriSuite.TestNormalizeSyntax"
+    ],
+    "required_pass": [],
+    "allow_extra_failures": true,
+    "parser": {
+      "framework": "custom",
+      "result_source": "stdout_stderr",
+      "pass_regex": "\\[\\s+OK\\s+\\]\\s+(?P<name>\\S+)",
+      "fail_regex": "\\[\\s+FAILED\\s+\\]\\s+(?P<name>\\S+)"
+    }
+  },
+  "artifacts": {
+    "stdout_log": "/logs/verifier/test-stdout.txt",
+    "stderr_log": "/logs/verifier/test-stderr.txt",
+    "parsed_results": "/logs/verifier/output.json",
+    "report": "/logs/verifier/report.json",
+    "reward": "/logs/verifier/reward.txt"
+  }
+}

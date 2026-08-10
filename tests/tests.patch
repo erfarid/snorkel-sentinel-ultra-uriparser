@@ -1,0 +1,134 @@
+--- a/test/test.cpp
++++ b/test/test.cpp
+@@ -1477,6 +1477,130 @@
+ 				URI_NORMALIZE_FRAGMENT));
+ }
+ 
++namespace {
++	bool testAddBaseHelperA(const char * base, const char * rel, const char * expectedResult) {
++		UriUriA baseUri;
++		UriUriA relUri;
++		UriUriA expectedUri;
++		UriUriA transformedUri;
++		const char * errorPos = NULL;
++		if (uriParseSingleUriA(&baseUri, base, &errorPos) != URI_SUCCESS) {
++			return false;
++		}
++		if (uriParseSingleUriA(&relUri, rel, &errorPos) != URI_SUCCESS) {
++			uriFreeUriMembersA(&baseUri);
++			return false;
++		}
++		if (uriParseSingleUriA(&expectedUri, expectedResult, &errorPos) != URI_SUCCESS) {
++			uriFreeUriMembersA(&baseUri);
++			uriFreeUriMembersA(&relUri);
++			return false;
++		}
++		if (uriAddBaseUriA(&transformedUri, &relUri, &baseUri) != URI_SUCCESS) {
++			uriFreeUriMembersA(&baseUri);
++			uriFreeUriMembersA(&relUri);
++			uriFreeUriMembersA(&expectedUri);
++			return false;
++		}
++		const bool equal = URI_TRUE == uriEqualsUriA(&transformedUri, &expectedUri);
++		uriFreeUriMembersA(&baseUri);
++		uriFreeUriMembersA(&relUri);
++		uriFreeUriMembersA(&expectedUri);
++		uriFreeUriMembersA(&transformedUri);
++		return equal;
++	}
++
++	bool testNormalizeSyntaxHelperA(const char * uriText, const char * expectedNormalized) {
++		UriUriA testUri;
++		UriUriA expectedUri;
++		const char * errorPos = NULL;
++		if (uriParseSingleUriA(&testUri, uriText, &errorPos) != URI_SUCCESS) {
++			return false;
++		}
++		if (uriParseSingleUriA(&expectedUri, expectedNormalized, &errorPos) != URI_SUCCESS) {
++			uriFreeUriMembersA(&testUri);
++			return false;
++		}
++		if (uriNormalizeSyntaxExA(&testUri, URI_NORMALIZE_PATH) != URI_SUCCESS) {
++			uriFreeUriMembersA(&testUri);
++			uriFreeUriMembersA(&expectedUri);
++			return false;
++		}
++		const bool equal = URI_TRUE == uriEqualsUriA(&testUri, &expectedUri);
++		uriFreeUriMembersA(&testUri);
++		uriFreeUriMembersA(&expectedUri);
++		return equal;
++	}
++}
++
++TEST(UriSuite, TestDotRootResolveW1) {
++	EXPECT_TRUE(testAddBaseHelper(L"http://a/b/c/../d;p?q", L"../..", L"http://a/"));
++}
++
++TEST(UriSuite, TestDotRootResolveW2) {
++	EXPECT_TRUE(testAddBaseHelper(L"http://a/b/../c/d;p?q", L"../..", L"http://a/"));
++}
++
++TEST(UriSuite, TestDotRootResolveW3) {
++	EXPECT_TRUE(testAddBaseHelper(L"http://a/b/c/d;p?q", L"../../..", L"http://a/"));
++}
++
++TEST(UriSuite, TestDotRootResolveA1) {
++	EXPECT_TRUE(testAddBaseHelperA("http://a/b/c/../d;p?q", "../..", "http://a/"));
++}
++
++TEST(UriSuite, TestDotRootResolveA2) {
++	EXPECT_TRUE(testAddBaseHelperA("http://a/b/../c/d;p?q", "../..", "http://a/"));
++}
++
++TEST(UriSuite, TestDotRootResolveA3) {
++	EXPECT_TRUE(testAddBaseHelperA("http://a/b/c/d;p?q", "../../..", "http://a/"));
++}
++
++TEST(UriSuite, TestDotRootNormalizeW1) {
++	EXPECT_TRUE(testNormalizeSyntaxHelper(L"http://a/b/c/../../..", L"http://a/", URI_NORMALIZE_PATH));
++}
++
++TEST(UriSuite, TestDotRootNormalizeW2) {
++	EXPECT_TRUE(testNormalizeSyntaxHelper(L"http://a/b/../c/../..", L"http://a/", URI_NORMALIZE_PATH));
++}
++
++TEST(UriSuite, TestDotRootNormalizeW3) {
++	EXPECT_TRUE(testNormalizeSyntaxHelper(L"https://example.com/x/y/../../..", L"https://example.com/", URI_NORMALIZE_PATH));
++}
++
++TEST(UriSuite, TestDotRootNormalizeA1) {
++	EXPECT_TRUE(testNormalizeSyntaxHelperA("http://a/b/c/../../..", "http://a/"));
++}
++
++TEST(UriSuite, TestDotRootNormalizeA2) {
++	EXPECT_TRUE(testNormalizeSyntaxHelperA("http://a/b/../c/../..", "http://a/"));
++}
++
++TEST(UriSuite, TestDotRootNormalizeA3) {
++	EXPECT_TRUE(testNormalizeSyntaxHelperA("https://example.com/x/y/../../..", "https://example.com/"));
++}
++
++TEST(UriSuite, TestDotRootRelativeW) {
++	EXPECT_TRUE(testNormalizeSyntaxHelper(L"../b/d", L"../b/d", URI_NORMALIZE_PATH));
++	EXPECT_TRUE(testNormalizeSyntaxHelper(L"a/../../b", L"../b", URI_NORMALIZE_PATH));
++	EXPECT_TRUE(testNormalizeSyntaxHelper(L"./http://foo", L"./http://foo", URI_NORMALIZE_PATH));
++}
++
++TEST(UriSuite, TestDotRootRelativeA) {
++	EXPECT_TRUE(testNormalizeSyntaxHelperA("../b/d", "../b/d"));
++	EXPECT_TRUE(testNormalizeSyntaxHelperA("a/../../b", "../b"));
++	EXPECT_TRUE(testNormalizeSyntaxHelperA("./http://foo", "./http://foo"));
++}
++
++TEST(UriSuite, TestDotRootSlashSequenceW) {
++	EXPECT_TRUE(testNormalizeSyntaxHelper(L"http://a/..///..", L"http://a//", URI_NORMALIZE_PATH));
++}
++
++TEST(UriSuite, TestDotRootSlashSequenceA) {
++	EXPECT_TRUE(testNormalizeSyntaxHelperA("http://a/..///..", "http://a//"));
++}
++
+ TEST(UriSuite, TestNormalizeCrashBug20080224) {
+ 		UriParserStateW stateW;
+ 		int res;
+
