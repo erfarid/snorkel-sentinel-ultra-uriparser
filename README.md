@@ -164,3 +164,6 @@ The following checks were performed:
 - RFC 3986
 - Git
 - GCC
+## Contributor
+
+This project was completed by **Md Farid** while working with **Crossing Hurdles** on a software-engineering task provided for the **Snorkel AI Sentinel Ultra** project.
